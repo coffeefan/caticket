@@ -1,3 +1,5 @@
 api/composer.phar
 api/vendor/
 api/config.php
+.DS_Store
+.idea
