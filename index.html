@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+	<meta charset="UTF-8">
+    <title>Ticketingsystem</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap-vue.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/caticket.css" />
+
+  </head>
+  <body>
+    <div class="container">
+
+      
+        <div id="app">
+            ...loading
+            <eventbox inline-template v-if="actview == 'events'" >
+                <div id="event">Events
+                    <div v-if="loading" class="loading">
+                        Loading...
+                    </div>
+                
+                    <div v-if="error" class="error">
+                        {{ error }}
+                    </div>
+
+                    <div class="event" @click="select" v-for="event in events" v-bind:key="event.eventid">
+                        <div class="dateinfobox">
+                            <span class="day">{{ event.eventstart | day}}</span>
+                            <span class="month"> {{ event.eventstart | shortmonth}}</span>
+                        </div>
+                        {{ event.eventname }}  
+                    </div>
+                </div>
+            </eventbox>
+            <register inline-template v-if="actview == 'register'">
+                <div class="test" id="register">Register
+                    <div class="checkbox-wrapper" @click="check">
+                        <div :class="{ checkbox: true, checked: checked }"></div>
+                        <div class="title">{{ title }}d</div>
+                    </div> 
+                </div>     
+            </register>
+        </div>
+    </div>
+    <script src="js/moment.min.js"></script>
+    <script src="js/vue.min.js"></script>
+    <script src="js/bootstrap-vue.min.js"></script>
+    <script src="js/bootstrap-vue-icons.min.js"></script>
+
+    <script src="js/caticket.js"></script>
+  </body>
+</html>
