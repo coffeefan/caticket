@@ -15,11 +15,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'GET
     }
 
 }
+
 require 'vendor/autoload.php';
+use Firebase\JWT\JWT;
 require 'config.php';
 
+require_once 'Model/Response.php';
 require_once 'Model/EventManager.php';
-require_once 'Model/EventManager.php';
+require_once 'Model/EMailManager.php';
+require_once  'Model/AuthManager.php';
+
+
+
 
 
 // error reporting (this is a demo, after all!)
@@ -45,8 +52,59 @@ Flight::route('/', function(){
 
 Flight::route('/events/active', function(){
     $em=new EventManager();
-    echo json_encode($em->getActiveEvents());
+    sendResponse($em->getActiveEvents());
 });
+
+Flight::route('/events/callforreservation/@eventid', function($eventid){
+    $em=new EventManager();
+    sendResponse($em->callforRegistration($eventid));
+});
+
+Flight::route('/events/checkreservationwindow/', function(){
+    $body = json_decode(Flight::request()->getBody());
+    $em=new EventManager();
+    sendResponse($em->checkReservationWindow($body->reservationkey));
+});
+
+Flight::route('POST /events/reservation/', function(){
+    $body = json_decode(Flight::request()->getBody());
+
+
+    $em=new EventManager();
+    sendResponse($em->createReservation($body->firstname,$body->lastname,$body->address,
+        $body->city,$body->mobile,$body->reservationkey,$body->email));
+});
+
+Flight::route('DELETE /events/reservation/@eventid/@reservationkey', function($eventid,$reservationkey){
+    $em=new EventManager();
+    sendResponse($em->deleteReservationWindow($reservationkey,$eventid));
+});
+
+Flight::route('/events/sendmail', function(){
+    EMailManager::sendMail();
+    echo "test";
+});
+
+
+Flight::route('/admin', function(){
+    AuthManager::checkTocken();
+    echo 'hello world! This is the secure';
+});
+
+
+Flight::route('/token', function(){
+    $body = json_decode(Flight::request()->getBody());
+    $am=new AuthManager();
+    sendResponse($am->login($body->username,$body->password));
+});
+
+/*
+ * Init for creating admin user
+Flight::route('/admin/createuser', function(){
+    $am=new AuthManager();
+    $am->register("Christian","Bachmann","admin","1234");
+});
+*/
 
 
 Flight::start();

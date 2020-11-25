@@ -2,6 +2,7 @@
 <html lang="de-CH">
 <head>
 	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketingsystem</title>
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap-vue.min.css" />
@@ -11,36 +12,151 @@
   <body>
     <div class="container">
 
-      
-        <div id="app">
-            ...loading
-            <eventbox inline-template v-if="actview == 'events'" >
-                <div id="event">Events
-                    <div v-if="loading" class="loading">
-                        Loading...
-                    </div>
-                
-                    <div v-if="error" class="error">
-                        {{ error }}
+        <template id="progress-ring">
+            <svg class="progress-ring" viewBox="-50,-50,100,100">
+                <circle class="progress-ring-circle" r="46"/>
+                <path class="progress-ring-ring" :d="path"/>
+                <circle class="progress-ring-end" :cx="endX" :cy="endY" r="4"/>
+                <text alignment-baseline="middle" text-anchor="middle">{{ text | totime }}</text>
+            </svg>
+        </template>
+
+        <template id="eventbox">
+            <div id="event"> <h2 class="Title">Events</h2>
+                <div v-if="loading" class="loading">
+                </div>
+
+                <div v-for="error in errors">- {{ error }} </div>
+
+                <div class="event"  v-for="event in events" v-bind:key="event.eventid">
+                    <div class="dateinfobox">
+                        <span class="month">{{ event.eventstart | shortmonth}}</span>
+                        <span class="day">{{ event.eventstart | day}}</span>
+
                     </div>
 
-                    <div class="event" @click="select" v-for="event in events" v-bind:key="event.eventid">
-                        <div class="dateinfobox">
-                            <span class="day">{{ event.eventstart | day}}</span>
-                            <span class="month"> {{ event.eventstart | shortmonth}}</span>
+
+                    <div class="openinfo">
+
+                        <div class="openticketsbarcontainer">
+                            <div class="openticketsbar" v-bind:style="{width: (((event.maxvisitors-event.bookedvisitors-event.reservedvisitors)/event.maxvisitors)*100)+'%'}"></div>
                         </div>
-                        {{ event.eventname }}  
+                        <div class="openseats">{{(event.maxvisitors-event.bookedvisitors-event.reservedvisitors) }}</div>
+
+                    </div>
+                    <div class="reservationinfo" v-if="event.reservedvisitors>0">{{event.reservedvisitors}}*</div>
+                    <div class="eventtitle ">
+                        {{ event.eventname }}
+                    </div>
+
+                    <div class="reservation">
+
+
+
+                        <div style="clear:both"></div>
+                    </div>
+                    <div @click="selectEvent(event.eventid)" class="btn btn-primary ticketbtn">Reservieren</div>
+
+                </div>
+            </div>
+        </template>
+
+        <template id="registerbox">
+            <div class="test" id="register">
+                <progress-ring v-bind:min="0" v-bind:max="300" v-bind:value="timer" v-bind:text="timer"></progress-ring>
+                <div class="fb-TerminStepTwo">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="Title">Anmelden</h2>
+                                <div v-if="errors.length" class="errors">
+                                    <div v-for="error in errors">- {{ error }} </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                            <div class="row">
+                                <div class="col-md-12" v-if="oldentries.length">
+                                    Fülle das Formular mit letzten Reservationen aus:
+                                    <a href="javascript:" v-for="oldentry in oldentries" @click="insert(oldentry)" >{{oldentry.firstname}} {{oldentry.lastname}} </a>
+
+                                </div>
+                            </div>
+
+
+
+
+                        <form @submit="checkForm" id="addressform">
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="inputFirstname">Vorname*</label>
+                                    <input type="text" class="form-control" id="inputFirstname"  v-model="formdata.firstname" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inputFirstname">Nachname*</label>
+                                    <input type="text" class="form-control" id="inputLastname"  v-model="formdata.lastname" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="inputStrasse">Strasse*</label>
+                                    <input type="text" class="form-control" id="inputStrasse"  v-model="formdata.address" required >
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inputCity">PLZ / Ort*</label>
+                                    <input type="text" class="form-control" id="inputCity"  v-model="formdata.city" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="inputEmail">E-Mail*</label>
+                                    <input type="email" class="form-control" id="inputEmail"  v-model="formdata.email" required >
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inputPhone">Mobilephone*</label>
+                                    <input type="text" class="form-control" id="inputPhone"  v-model="formdata.mobile" required >
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12 text-right">
+                                    <button class="btn btn-primary back" type="button" @click="back()" >Zurück</button>
+                                    <button type="submit" class="btn btn-primary next">Anmelden</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </eventbox>
-            <register inline-template v-if="actview == 'register'">
-                <div class="test" id="register">Register
-                    <div class="checkbox-wrapper" @click="check">
-                        <div :class="{ checkbox: true, checked: checked }"></div>
-                        <div class="title">{{ title }}d</div>
-                    </div> 
-                </div>     
-            </register>
+            </div>
+        </template>
+
+        <template id="thankyoubox">
+            <div class="test" id="thankyou">
+                <div class="fb-TerminStepTwo">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="Title">Danke für deine Reservation</h2>
+                            </div>
+                        </div>
+                        Als bestätigung solltest du ein E-Mail erhalten haben.<br/>
+                        {{formdata.firstname}} {{formdata.lastname}}<br/>
+                        {{formdata.address}}<br/>
+                        {{formdata.city}}<br/>
+                        {{formdata.email}}<br/>
+                        {{formdata.mobile}}
+                    </div>
+                    <button type="submit" class="btn btn-primary next" @click="showEvents()">Zu den Events</button>
+                </div>
+            </div>
+        </template>
+
+      
+        <div id="app">
+
+            <eventbox  v-if="activView == 'events'" ></eventbox>
+            <register  v-if="activView == 'register'" v-bind:timer="timer"></register>
+            <thankyou  v-if="activView == 'thankyou'"  ></thankyou>
         </div>
     </div>
     <script src="js/moment.min.js"></script>

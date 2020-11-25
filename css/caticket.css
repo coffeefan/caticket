@@ -6,20 +6,147 @@ html{
 	font-size: 20px !important;
 }
 
+.btn-primary{
+/*
+background-color: #5C5C5C;
+border-color: #5C5C5C;*/
+background-color: #040505;
+border-color: #040505;
+}
+
+.btn-primary:hover{
+	background-color: #000000;
+	border-color: #000000;
+}
 
 
+
+/*
+timer
+*/
+.progress-ring {
+	width: 60px;
+	height: 60px;
+	position: fixed;
+	top: 10px;
+	right: 10px;
+	z-index: 120;
+
+}
+
+.progress-ring-circle {
+	stroke: rgba(0, 0, 0, 0.1);
+	stroke-width: 4;
+	fill: none;
+}
+
+.progress-ring-ring {
+	stroke: #CE0815;
+	stroke-width: 8;
+	fill: none;
+}
+
+.progress-ring-end {
+	fill: #CE0815;
+}
+
+.progress-ring text{
+	font-weight: bold;
+	font-size: 25px;
+}
+
+/*
+events
+ */
 .event{
-	margin: 20px auto;
-	width: 500px;
+	margin: 70px auto 90px auto;
+	width: 290px;
 	padding: 10px;
 	background: #434343;
 	-webkit-box-shadow: 9px 4px 30px 0px rgba(50, 50, 50, 0.78);
 	-moz-box-shadow:    9px 4px 30px 0px rgba(50, 50, 50, 0.78);
 	box-shadow:         9px 4px 30px 0px rgba(50, 50, 50, 0.78);
+	color: #FFFFFF;
 }
 
+.eventtitle{
+	margin: 15px 0px 50px 15px;
+	text-transform:  uppercase ;
+	letter-spacing: 2px;
+}
+
+
+
 .dateinfobox{
-	margin:-30px 0px 0px 15px;
+	margin:-45px 0px 0px 15px;
 	background: #CE0815;
 	color:#FFFFFF;
+	height:70px;
+	width: 70px;
+	padding: 5px;
+	text-align: center;
+}
+
+.dateinfobox .day{
+	display: block;
+	font-size:28px;
+	font-weight: bold;
+	margin-top:-10px;
+}
+
+.dateinfobox .month{
+	display: block;
+
+	font-size:19px;
+	font-weight: lighter;
+	letter-spacing: 4px;
+}
+
+.openticketsbarcontainer{
+	width: 40px;
+	border:1px solid grey;
+	height:14px;
+}
+
+.reservationinfo{
+	float: right;
+	font-size:10px;
+	margin: -3px 5px 0px 5px;
+}
+
+.openinfo{
+	float:right;
+	margin: -25px 0px 0px 0px;
+
+
+}
+
+.openticketsbar{
+	float:right;
+	height:14px;
+	background-color: grey;
+
+
+}
+.openseats{
+	float:right;
+	font-size:15px;
+	margin-top:-4px;
+	margin-left:5px;
+
+}
+.openticketsbarcontainer{
+	float:left;
+
+}
+
+.ticketbtn{
+	float:right;
+	font-size: 12px;
+	padding: 4px 6px;
+	margin:-10px 0px 0px 15px;
+}
+
+.reservation{
+	margin-bottom:-20px;
 }
