@@ -20,6 +20,22 @@ class EventManager{
         return new Response($statement->fetchAll(\PDO::FETCH_ASSOC));
     }
 
+    public function getReservation($reservationkey){
+        $date = new DateTime("now", new DateTimeZone('Europe/Berlin') );
+        $statement = $this->db->prepare("
+            SELECT reservationkey, firstname,lastname,email, address,city, mobile, eventname, eventstart FROM visitors JOIN events ON visitors.eventid=events.eventid WHERE reservationkey=:reservationkey AND STATUS=10 AND isdeleted!=1");
+        $statement->execute(array(":reservationkey"=>$reservationkey));
+        return new Response($statement->fetch(\PDO::FETCH_ASSOC));
+    }
+
+    public function clearReservation(){
+        $timleftsince = new DateTime("now", new DateTimeZone('Europe/Berlin') );
+        $timleftsince->modify("-8 minutes");
+        $statement = $this->db->prepare("Delete from visitors WHERE STATUS=0 AND isdeleted!=1 and reservationstart<:timleftsince");
+        $statement->execute(array(":timleftsince"=>$timleftsince->format('Y-m-d H:i:s')));
+        return new Response([]);
+    }
+
     public function callforRegistration($eventid){
 
         $statement = $this->db->prepare("SELECT COUNT(*) AS currentamount, (SELECT maxvisitors FROM events WHERE eventid=:eventid) as maxamount FROM visitors WHERE eventid=:eventid AND isdeleted!=1");

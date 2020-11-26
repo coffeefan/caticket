@@ -68,11 +68,16 @@ Flight::route('/events/checkreservationwindow/', function(){
 
 Flight::route('POST /events/reservation/', function(){
     $body = json_decode(Flight::request()->getBody());
-
-
     $em=new EventManager();
-    sendResponse($em->createReservation($body->firstname,$body->lastname,$body->address,
-        $body->city,$body->mobile,$body->reservationkey,$body->email));
+    $response=$em->createReservation($body->firstname,$body->lastname,$body->address,
+        $body->city,$body->mobile,$body->reservationkey,$body->email);
+
+    if($response->getErrorcode()!=-1)  sendResponse($response);
+    $response=$em->getReservation($body->reservationkey);
+    $reservation=$response->getBody();
+   sendResponse(EMailManager::sendReservationSubmitMail(
+        $reservation["firstname"],$reservation["lastname"],$reservation["address"],$reservation["city"],$reservation["mobile"],$reservation["email"], $reservation["eventname"], $reservation["eventstart"]));
+
 });
 
 Flight::route('DELETE /events/reservation/@eventid/@reservationkey', function($eventid,$reservationkey){
@@ -81,7 +86,7 @@ Flight::route('DELETE /events/reservation/@eventid/@reservationkey', function($e
 });
 
 Flight::route('/events/sendmail', function(){
-    EMailManager::sendMail();
+    EMailManager::sendMail("christianbachmann@outlook.com","Eine Info","Das ist aber ein super Text","Das ist aber ein super Text");
     echo "test";
 });
 
@@ -96,6 +101,12 @@ Flight::route('/token', function(){
     $body = json_decode(Flight::request()->getBody());
     $am=new AuthManager();
     sendResponse($am->login($body->username,$body->password));
+});
+
+Flight::route('/events/clear', function(){
+    $body = json_decode(Flight::request()->getBody());
+    $em=new EventManager();
+    sendResponse($em->clearReservation());
 });
 
 /*

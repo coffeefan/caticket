@@ -2,7 +2,7 @@
 ( function() {
 
 	Vue.config.devtools = true;
-	let restdomain="https://www.kirchenaadorf.ch/chrischona/caticket"
+	let restdomain="https://www.kirchenaadorf.ch/chrischona/caticket";
 
 	Vue.component('eventbox', {
 			template: '#eventbox',
@@ -109,8 +109,12 @@
 		},
 		created(){
 			this.checkReservationWindow ();
+
 		},
 		methods: {
+			handleOk(bvModalEvt) {
+				this.$parent.clearReservationWindow();
+			},
 			insert(formdata){
 
 				this.formdata=formdata;
@@ -127,14 +131,20 @@
 					body: JSON.stringify(request)
 				};
 				fetch(restdomain+"/api/events/reservation", requestOptions)
-					.then()
-					.then(()=>{
-						this.$parent.formdata=this.formdata;
-						this.$parent.setReservationkey(null);
-						this.$parent.setEventid(-1);
-						this.$parent.goToStep("thankyou");
-						this.$parent.timer = -1;
-						this.$parent.pushToOldEntries(this.formdata);
+					.then(async response => {
+						if(response.ok) {
+
+							this.$parent.formdata=this.formdata;
+							this.$parent.setReservationkey(null);
+							this.$parent.setEventid(-1);
+							this.$parent.goToStep("thankyou");
+							this.$parent.timer = -1;
+							this.$parent.pushToOldEntries(this.formdata);
+
+						}else{
+							this.errors.push('Es ist ein Serverfehler aufgetreten');
+						}
+
 
 					})
 					.catch((e) => {
@@ -170,6 +180,7 @@
 					if(this.timerstep===10){
 						this.checkReservationWindow ();
 						this.timerstep=0;
+
 					}
 				}else{
 					clearInterval(window.mytimer);
@@ -194,16 +205,9 @@
 							if(this.$parent.timer===-1)this.startIntervalTimer();
 							this.$parent.timer=checkreservationwindow.remainingseconds;
 
-						}else if(response.status==406){
-							this.errors.push('Die Zeit für die Reservation ist abgelaufen.');
-							this.$parent.clearReservationWindow();
-
-						}else if(response.status==404){
-							this.errors.push('Die Zeit für die Reservation ist abgelaufen.');
-							this.$parent.clearReservationWindow();
-
 						} else{
-							this.errors.push('Es ist ein Serverfehler aufgetreten');
+							this.$bvModal.show('modal-prevent-closing');
+
 						}
 					})
 
@@ -330,6 +334,13 @@
 					formdata.ref=new Date().getTime();
 					this.oldentries.push(formdata);
 					localStorage.setItem('oldentries', JSON.stringify(this.oldentries));
+				}else{
+					for (i = 0; i < this.oldentries.length; i++) {
+						if(this.oldentries[i].ref===formdata.ref){
+							this.oldentries[i]=formdata;
+							localStorage.setItem('oldentries', JSON.stringify(this.oldentries));
+						}
+					}
 				}
 
 			}

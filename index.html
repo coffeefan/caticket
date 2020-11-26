@@ -55,8 +55,8 @@
 
                         <div style="clear:both"></div>
                     </div>
-                    <div @click="selectEvent(event.eventid)" class="btn btn-primary ticketbtn">Reservieren</div>
-
+                    <div class="ticketbtn deactiv" v-if="((event.maxvisitors-event.bookedvisitors-event.reservedvisitors)<=0)">Ausgebucht</div>
+                    <div @click="selectEvent(event.eventid)" class="btn btn-primary ticketbtn  " v-if="((event.maxvisitors-event.bookedvisitors-event.reservedvisitors)>0)">Reservieren</div>
                 </div>
             </div>
         </template>
@@ -86,7 +86,7 @@
 
 
 
-
+<br/>
                         <form @submit="checkForm" id="addressform">
                             <div class="form-row">
                                 <div class="form-group col-md-6">
@@ -125,6 +125,21 @@
                                 </div>
                             </div>
                         </form>
+                        <div>
+
+
+                            <b-modal
+                                    id="modal-prevent-closing"
+                                    ref="modal"
+                                    title="Abgelaufen!"
+                                    @ok="handleOk"
+                                    @cancel="handleOk"
+                                    @close="handleOk"
+                                    @hide="handleOk"
+                            >
+                                Dein Reservationszeitslot ist nicht mehr gültig
+                            </b-modal>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -136,17 +151,24 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-md-12">
-                                <h2 class="Title">Danke für deine Reservation</h2>
+                                <h2 class="Title">Danke für deine Reservation!</h2>
+                                Als Bestätigung solltest du ein E-Mail erhalten haben.<br/>
+                               <div class="anmeldedaten">
+                                   <strong>Reservationsdaten:</strong><br/>
+                                   {{formdata.firstname}} {{formdata.lastname}}<br/>
+                                   {{formdata.address}}<br/>
+                                   {{formdata.city}}<br/>
+                                   {{formdata.email}}<br/>
+                                   {{formdata.mobile}}
+                               </div><br/>
+
+                                <button type="submit" class="btn btn-primary next" @click="showEvents()">Zu den Events</button>
+
                             </div>
                         </div>
-                        Als bestätigung solltest du ein E-Mail erhalten haben.<br/>
-                        {{formdata.firstname}} {{formdata.lastname}}<br/>
-                        {{formdata.address}}<br/>
-                        {{formdata.city}}<br/>
-                        {{formdata.email}}<br/>
-                        {{formdata.mobile}}
+
                     </div>
-                    <button type="submit" class="btn btn-primary next" @click="showEvents()">Zu den Events</button>
+
                 </div>
             </div>
         </template>

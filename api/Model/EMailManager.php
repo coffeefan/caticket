@@ -25,10 +25,7 @@ class EMailManager{
         }
     }*/
 
-    public static function sendMail(){
-
-        $email="christianbachmann@outlook.com";
-
+    public static function sendMail($email,$subject,$message,$txtmessage,$listdata=[]){
         // Instantiation and passing `true` enables exceptions
         $mail = new PHPMailer(true);
 
@@ -49,14 +46,52 @@ class EMailManager{
             $mail->addAddress($email);     // Add a recipient
             // Content
             $mail->isHTML(true);                                  // Set email format to HTML
-            $mail->Subject = 'Reservationsbestätigung';
-            $mail->Body    = 'Gerne bestätiguen wir die Reservation vom Gottesdienst';
-            $mail->AltBody = 'Gerne bestätiguen wir die Reservation vom Gottesdienst';
+            $mail->Subject = $subject;
+            Flight::render("emaillayout.php",array("message"=>$message),'mailbody');
+
+            $mail->Body    =  Flight::view()->get('mailbody');
+            $mail->AltBody = $txtmessage;
+
+            if($listdata!=[]) {
+                $list = array(
+                    array('aaa', 'bbb', 'ccc', 'dddd'),
+                    array('123', '456', '789'),
+                    array('"aaa"', '"bbb"')
+                );
+
+                $fp = fopen('file.csv', 'w');
+                foreach ($list as $fields) {
+                    fputcsv($fp, $fields);
+                }
+
+                fclose($fp);
+                $mail->addAttachment('file.csv');         // Add attachments
+            }
+
+
 
             $mail->send();
             echo 'Message has been sent';
         } catch (Exception $e) {
             echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
+    }
+
+    public static function sendReservationSubmitMail($firstname,$lastname,$address,$city,$mobile,$email, $eventname, $eventstart){
+        $phpdate = strtotime( $eventstart );
+        $eventstart = date( 'd.m H:i', $phpdate );
+
+        $subject="Reservationsbestaetigung";
+        $messagetxt="Gerne bestaetigen wir die Reservation zum".$eventname." am ".$eventstart." mit folgenden Daten
+".$firstname." ".$lastname."
+".$address."
+".$city."
+".$mobile."
+".$email;
+        Flight::render("emailreservation.php",array("firstname"=>$firstname,"lastname"=>$lastname,
+            "address"=>$address,"city"=>$city,"mobile"=>$mobile,"email"=>$email, "eventname"=>$eventname,
+            "eventstart"=>$eventstart),'mailmessage');
+        EMailManager::sendMail($email,$subject,Flight::view()->get('mailmessage'),$messagetxt);
+        return new Response([]);
     }
 }

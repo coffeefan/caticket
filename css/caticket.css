@@ -19,6 +19,14 @@ border-color: #040505;
 	border-color: #000000;
 }
 
+a {
+	color: #CE0815;
+}
+
+a:hover {
+	color: #96050e;
+}
+
 
 
 /*
@@ -147,6 +155,24 @@ events
 	margin:-10px 0px 0px 15px;
 }
 
+.ticketbtn.deactiv{
+	background: #CCCCCC;
+	border:0;
+	color: #CE0815;
+}
+
 .reservation{
 	margin-bottom:-20px;
+}
+
+/*
+*thankyou
+ */
+
+.anmeldedaten{
+	display: inline-block;
+	background: #ebebeb;
+	border:1px solid #8f8f8f;
+	margin: 20px auto 30px auto;
+	padding: 10px;
 }
