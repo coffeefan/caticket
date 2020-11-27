@@ -1,6 +1,7 @@
 
 ( function() {
 
+	//config
 	Vue.config.devtools = true;
 	let restdomain="https://www.kirchenaadorf.ch/chrischona/caticket";
 
@@ -343,6 +344,83 @@
 					}
 				}
 
+			}
+		}
+
+	});
+
+	/*
+	* dashboard
+	 */
+
+	Vue.component('login', {
+		template: '#loginbox',
+		data() {
+			return {
+				loginformdata:{},
+				errors:[]
+			}
+		},
+		created(){
+
+		},
+		methods:{
+			login: function(e){
+				e.preventDefault();
+
+				let request=this.loginformdata;
+				errors=[];
+
+				const requestOptions = {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(request)
+				};
+				fetch(restdomain+"/api/token", requestOptions)
+					.then(async response => {
+						if(response.ok) {
+							let logininfo= await response.json();
+							this.$parent.updateCredentials(logininfo.jwt,logininfo.expiresAt);
+
+						} else{
+							this.errors.push('Logindaten falsch');
+
+						}
+					})
+
+					.catch((e) => {
+						this.errors.push('Logindaten falsch');
+					});
+			}
+		}
+
+	});
+
+	var dashboardApp = new Vue({
+		el: "#dashboardapp",
+		data:{
+			dactivView:'login',
+			jwttoken:null,
+			jwttokenexpireat:0
+		},
+		created: function() {
+
+		},
+		mounted:function(){
+			console.log('App mounted!');
+			if (localStorage.getItem('caticketdashboardactivview')) this.dactivView = JSON.parse(localStorage.getItem('caticketdashboardactivview'));
+			if (localStorage.getItem('catickjwttoken')) this.jwttoken = localStorage.getItem('catickjwttoken');
+			if (localStorage.getItem('catickjwttokenexpireat')) this.jwttokenexpireat = localStorage.getItem('catickjwttokenexpireat');
+
+		},
+		methods:{
+			goToStep: function(step) {
+				this.activView = step;
+				localStorage.setItem('caticketdashboardactivview', JSON.stringify(this.dactivView));
+			},
+			updateCredentials: function(jwttoken,jwttokenexpireat){
+				localStorage.setItem('catickjwttoken', jwttoken);
+				localStorage.setItem('catickjwttokenexpireat', jwttokenexpireat);
 			}
 		}
 

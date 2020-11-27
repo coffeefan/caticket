@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketingsystem</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap-vue.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/caticket.css" />
+
+  </head>
+  <body>
+    <div class="container">
+        <template id="loginbox">
+            <div id="loginform">
+            <form class="form-signin" @submit="login">
+                <img src="img/company.png" class="companylogo" width="95">
+                <div v-for="error in errors">- {{ error }} </div>
+                <label for="inputUsername" class="sr-only">Benutzernames</label>
+                <input type="text"  id="inputUsername" class="form-control" placeholder="Benutzername" required autofocus v-model="loginformdata.username">
+                <label for="inputPassword" class="sr-only">Passwort</label>
+                <input type="password" id="inputPassword" class="form-control" placeholder="Password" required v-model="loginformdata.password">
+
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+                <p class="mt-5 mb-3 text-muted">&copy; Chrischona Aadorf</p>
+            </form>
+            </div>
+        </template>
+
+        <div id="dashboardapp">
+            <login  v-if="dactivView == 'login'" ></login>
+        </div>
+    </div>
+    <script src="js/moment.min.js"></script>
+    <script src="js/vue.min.js"></script>
+    <script src="js/bootstrap-vue.min.js"></script>
+    <script src="js/bootstrap-vue-icons.min.js"></script>
+
+    <script src="js/caticket.js"></script>
+  </body>
+</html>
