@@ -4,7 +4,7 @@
 	//config
 	Vue.config.devtools = true;
 	let restdomain="https://www.kirchenaadorf.ch/chrischona/caticket";
-	restdomain="";
+	//restdomain="";
 
 
 	Vue.component('eventbox', {
@@ -357,6 +357,7 @@
 
 	Vue.component('adminevents', {
 		template: '#admineventsbox',
+
 		data() {
 			return {
 				errors:[],
@@ -369,6 +370,10 @@
 			this.loadevents();
 		},
 		methods:{
+			showVisitors(event){
+				this.$parent.visitorsFromEventid=event.eventid;
+				this.$parent.goToStep("adminvisitors")
+			},
 			showeventdetail: function(event=null){
 				if(event!=={} && event!=null){
 					event.eventdate=moment(event.eventstart).format('YYYY-MM-DD');
@@ -418,6 +423,28 @@
 						}else{
 							this.loadevents();
 							this.errors.push('Daten waren falsch');
+						}
+					})
+
+					.catch((e) => {
+
+						this.errors.push('Unbekannter Systemfehler'+e.message);
+					});
+			},
+			downloadReport: function(event){
+				const requestOptions = {
+					method: "GET",
+					headers: { "Authorization": "Bearer "+this.$parent.jwttoken,"Content-Type": "application/json" }
+
+				};
+				fetch(restdomain+"/api/admin/downloadreport/"+event.eventid, requestOptions)
+					.then(async response => {
+						if(response.ok) {
+							let reportinfo= await response.json();
+							window.location.href = restdomain+"/api/"+reportinfo.filename;
+						}else{
+							this.errors.push('Probleme beim generieren');
+
 						}
 					})
 
@@ -496,11 +523,78 @@
 
 	Vue.component('adminvisitors', {
 		template: '#adminvisitorsbox',
-
+		data() {
+			return {
+				errors:[],
+				visitors:[],
+				eventform:{},
+				visitorsFromEventid:-1,
+				unsubscribeVisitor:{}
+			}
+		},
 		created(){
-
+			this.visitorsFromEventid=this.$parent.visitorsFromEventid;
+			this.loadvisitors();
 		},
 		methods:{
+			back:function(){
+				this.$parent.goToStep("adminevents");
+			},
+			showUnsubscribe:function(unsubscribeVisitor){
+				this.unsubscribeVisitor=unsubscribeVisitor;
+				this.$bvModal.show('modal-unsubscribeVisitor',{
+					okTitle: 'Nein',
+					cancelTitle: 'Ja',
+					hideHeaderClose: false,
+					centered: true
+				});
+			},
+			unsubscribeVisitorNow:function(){
+				const requestOptions = {
+					method: 'DELETE',
+					headers: { "Authorization": "Bearer "+this.$parent.jwttoken,"Content-Type": "application/json" },
+				};
+				fetch(restdomain+"/api/admin/visitors/"+this.unsubscribeVisitor.visitorid, requestOptions)
+					.then(async response => {
+						if(response.ok) {
+							this.loadvisitors();
+						}else if(response.status===401){
+							this.$parent.logout();
+						}else{
+							this.loadvisitors();
+							this.errors.push('Daten waren falsch');
+						}
+					})
+
+					.catch((e) => {
+
+						this.errors.push('Unbekannter Systemfehler'+e.message);
+					});
+			},
+			loadvisitors: function(){
+				errors=[];
+
+				const requestOptions = {
+					method: "GET",
+					headers: { "Authorization": "Bearer "+this.$parent.jwttoken,"Content-Type": "application/json" }
+				};
+				fetch(restdomain+"/api/admin/visitors/"+this.visitorsFromEventid, requestOptions)
+					.then(async response => {
+						if(response.ok) {
+							this.visitors= await response.json();
+						}else if(response.status===401){
+							alert("okey");
+							this.$parent.logout();
+						}else{
+							this.errors.push('Logindaten falsch');
+
+						}
+					})
+					.catch((e) => {
+						this.errors.push('Unbekannter Systemfehler'+e.message);
+					});
+			}
+
 		}
 
 	});
@@ -533,7 +627,9 @@
 					.then(async response => {
 						if(response.ok) {
 							let logininfo= await response.json();
+							console.log(logininfo);
 							this.$parent.updateCredentials(logininfo.jwt,logininfo.expiresAt);
+							this.$parent.goToStep("adminevents");
 
 						} else{
 							this.errors.push('Logindaten falsch');
@@ -564,6 +660,9 @@
 		methods:{
 			navigate(target){
 				this.$parent.goToStep(target);
+			},
+			logout(){
+				this.$parent.logout();
 			}
 		}
 
@@ -574,7 +673,8 @@
 		data:{
 			dactivView:'login',
 			jwttoken:null,
-			jwttokenexpireat:0
+			jwttokenexpireat:0,
+			visitorsFromEventid:-1
 		},
 		created: function() {
 
@@ -592,8 +692,8 @@
 				localStorage.setItem('caticketdashboardactivview', JSON.stringify(this.dactivView));
 			},
 			updateCredentials: function(jwttoken,jwttokenexpireat){
-				this.catickjwttoken=jwttoken;
-				localStorage.setItem('catickjwttoken', this.catickjwttoken);
+				this.jwttoken=jwttoken;
+				localStorage.setItem('catickjwttoken', this.jwttoken);
 				this.jwttokenexpireat=jwttokenexpireat;
 				localStorage.setItem('catickjwttokenexpireat', this.jwttokenexpireat);
 			},

@@ -31,6 +31,37 @@ class EventManager{
         return new Response($statement->fetchAll(\PDO::FETCH_ASSOC));
     }
 
+    public function getEvent($eventid){
+        $statement = $this->db->prepare("
+            SELECT eventid, eventname,eventstart,eventend,maxvisitors                
+                from events where eventid=:eventid
+             Order by eventstart desc");
+        $statement->execute(array(":eventid"=>$eventid));
+        return new Response($statement->fetch(\PDO::FETCH_ASSOC));
+    }
+
+    public function getEventForReport(){
+        $date = new DateTime("now", new DateTimeZone('Europe/Berlin') );
+        $date->modify(Config::$sendreportsMinutesBeforeStart." Minutes");
+        echo $date->format('Y-m-d H:i:s')."d";
+        $statement = $this->db->prepare("
+            SELECT eventid, eventname,eventstart,eventend,maxvisitors                
+                from events where eventstart<=:now and reportsended=0
+             Order by eventstart desc");
+        $statement->execute(array(":now"=>$date->format('Y-m-d H:i:s')));
+
+        $event=$statement->fetch(\PDO::FETCH_ASSOC);
+        if($event==null || count($event)==0) return new Response([]);
+        return new Response($event);
+    }
+
+    public function setReportSended($eventid){
+        $statement = $this->db->prepare("
+           Update events set reportsended=reportsended+1 where eventid=:eventid ");
+        $statement->execute(array(":eventid"=>$eventid));
+        return new Response([]);
+    }
+
     public function addEvent($eventname,$eventstart,$eventend,$maxvisitors){
         $statement = $this->db->prepare("
             Insert into events (eventname,eventstart,eventend,maxvisitors) VALUES (:eventname,:eventstart,:eventend,:maxvisitors) ");
@@ -49,6 +80,37 @@ class EventManager{
         $statement = $this->db->prepare("
            Delete from events where eventid=:eventid ");
         $statement->execute(array(":eventid"=>$eventid));
+        return new Response([]);
+    }
+
+    public function getAllPossibleVisitors($eventid){
+        $statement = $this->db->prepare("
+            SELECT visitorid,reservationstart,firstname,lastname,address,city,email, mobile,isdeleted from visitors
+            where eventid=:eventid Order by status desc,isdeleted, visitorid");
+        $statement->execute(array(":eventid"=>$eventid));
+        return new Response($statement->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    public function getVisitors($eventid){
+        $statement = $this->db->prepare("
+            SELECT visitorid,firstname,lastname,address,city,email, mobile,isdeleted from visitors
+            where eventid=:eventid and status=10 and isdeleted=0 Order by visitorid");
+        $statement->execute(array(":eventid"=>$eventid));
+        return new Response($statement->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    public function getunsubscribedVisitors($eventid){
+        $statement = $this->db->prepare("
+            SELECT visitorid,firstname,lastname,address,city,email, mobile,isdeleted from visitors
+            where eventid=:eventid and status=10 and isdeleted=1 Order by visitorid");
+        $statement->execute(array(":eventid"=>$eventid));
+        return new Response($statement->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    public function unsubscribe($vistorid){
+        $statement = $this->db->prepare("
+           Update visitors set isdeleted=1 where visitorid=:visitorid ");
+        $statement->execute(array(":visitorid"=>$vistorid));
         return new Response([]);
     }
 

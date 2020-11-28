@@ -68,14 +68,20 @@ class AuthManager
     public static function checkTocken(){
         $jwt=null;
         try {
-            $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-            $arr = explode(" ", $authHeader);
-            $jwt = $arr[1];
+
+            $headers = apache_request_headers();
+            if(isset($headers['Authorization'])){
+                $matches = array();
+                preg_match('/Token token="(.*)"/', $headers['Authorization'], $matches);
+                if(isset($matches[1])){
+                    $jwt = $matches[1];
+                }
+            }
         } catch (Exception $e) {
+            mail("christianbachmann@outlook.com","Fehler-Bug",$e->getMessage()."first");
             http_response_code(401);
-            echo json_encode(array(
-                "message" => "Access denied.",
-            ));
+            echo "Access denied";
+
             die();
         }
         if($jwt!=null) {
@@ -86,11 +92,10 @@ class AuthManager
 
 
             } catch (Exception $e) {
-
+                mail("christianbachmann@outlook.com","Fehler-Bug",$e->getMessage());
                 http_response_code(401);
-                echo json_encode(array(
-                    "message" => "Access denied.",
-                ));
+
+                echo "Access denied";
                 die();
             }
         }

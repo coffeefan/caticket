@@ -230,6 +230,13 @@ events
 	border-top-right-radius: 0;
 }
 
+.navigation{
+	margin-bottom: 40px;
+	text-align: right;
+}
 .companylogo{
 	margin-bottom: 30px;
+}
+.subscribe-1{
+	text-decoration:line-through;
 }

@@ -25,7 +25,7 @@ class EMailManager{
         }
     }*/
 
-    public static function sendMail($email,$subject,$message,$txtmessage,$listdata=[]){
+    public static function sendMail($emails,$subject,$message,$txtmessage,$attachments=[]){
         // Instantiation and passing `true` enables exceptions
         $mail = new PHPMailer(true);
 
@@ -43,7 +43,10 @@ class EMailManager{
 
             //Recipients
             $mail->setFrom(Config::$smtpusername, 'Chrischona Aadorf');
-            $mail->addAddress($email);     // Add a recipient
+            foreach($emails as $email){
+                $mail->addAddress($email);     // Add a recipient
+            }
+
             // Content
             $mail->isHTML(true);                                  // Set email format to HTML
             $mail->Subject = $subject;
@@ -52,20 +55,10 @@ class EMailManager{
             $mail->Body    =  Flight::view()->get('mailbody');
             $mail->AltBody = $txtmessage;
 
-            if($listdata!=[]) {
-                $list = array(
-                    array('aaa', 'bbb', 'ccc', 'dddd'),
-                    array('123', '456', '789'),
-                    array('"aaa"', '"bbb"')
-                );
-
-                $fp = fopen('file.csv', 'w');
-                foreach ($list as $fields) {
-                    fputcsv($fp, $fields);
+            if($attachments!=[]) {
+                foreach($attachments as $attachment){
+                    $mail->addAttachment($attachment);         // Add attachments
                 }
-
-                fclose($fp);
-                $mail->addAttachment('file.csv');         // Add attachments
             }
 
 
@@ -91,7 +84,7 @@ class EMailManager{
         Flight::render("emailreservation.php",array("firstname"=>$firstname,"lastname"=>$lastname,
             "address"=>$address,"city"=>$city,"mobile"=>$mobile,"email"=>$email, "eventname"=>$eventname,
             "eventstart"=>$eventstart),'mailmessage');
-        EMailManager::sendMail($email,$subject,Flight::view()->get('mailmessage'),$messagetxt);
+        EMailManager::sendMail([$email],$subject,Flight::view()->get('mailmessage'),$messagetxt);
         return new Response([]);
     }
 }

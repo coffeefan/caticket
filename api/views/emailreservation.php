@@ -2,7 +2,7 @@
 
 <p>Guten Tag <?php echo $firstname; ?>   <?php echo $lastname; ?></p>
 
-<p>Gerne bestaetigen wir die Reservation zum <strong><?php echo $eventname; ?></strong> am <strong><?php echo $eventstart; ?></strong>  mit folgenden Daten: </p>
+<p>Gerne bestaetigen wir die Reservation zum <strong><?php echo $eventname; ?></strong> um <strong><?php echo $eventstart; ?></strong>  mit folgenden Daten: </p>
 
 <p><?php echo $firstname; ?>  <?php echo $lastname; ?><br/>
 <?php echo $address; ?><br/>
