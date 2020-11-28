@@ -4,26 +4,6 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 class EMailManager{
-    /*
-    public static function sendMail(){
-        $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("chrischonaticketing@kirchenaadorf.ch", "Chrischona");
-        $email->setSubject("Reservationsbestaetigung");
-        $email->addTo("c.bachmann@inaffect.net", "Christian Bachmann");
-        $email->addContent("text/plain", "Guten Morgen Christian du hast erfolgreich dein Ticket reserviert");
-        $email->addContent(
-            "text/html", "<strong>Guten Morgen Christian du hast erfolgreich dein Ticket reserviert.</strong>"
-        );
-        $sendgrid = new \SendGrid(Config::$SENDGRID_API_KEY);
-        try {
-            $response = $sendgrid->send($email);
-            print $response->statusCode() . "\n";
-            print_r($response->headers());
-            print $response->body() . "\n";
-        } catch (Exception $e) {
-            echo 'Caught exception: '. $e->getMessage() ."\n";
-        }
-    }*/
 
     public static function sendMail($emails,$subject,$message,$txtmessage,$attachments=[]){
         // Instantiation and passing `true` enables exceptions
