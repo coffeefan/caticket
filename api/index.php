@@ -91,7 +91,7 @@ Flight::route('/events/sendmail', function(){
 });
 
 
-Flight::route('/admin', function(){
+Flight::route('/checktoken', function(){
     AuthManager::checkTocken();
     echo 'hello world! This is the secure';
 });
@@ -102,6 +102,43 @@ Flight::route('/token', function(){
     $am=new AuthManager();
     sendResponse($am->login($body->username,$body->password));
 });
+
+Flight::route('GET /admin/events/', function(){
+    AuthManager::checkTocken();
+    $body = json_decode(Flight::request()->getBody());
+    $em=new EventManager();
+    $response=$em->getEvents();
+    sendResponse($response);
+});
+
+Flight::route('POST /admin/events/', function(){
+    AuthManager::checkTocken();
+    $body = json_decode(Flight::request()->getBody());
+    $em=new EventManager();
+    $response=$em->addEvent($body->eventname,$body->eventstart,$body->eventend,
+        $body->maxvisitors);
+    sendResponse($response);
+});
+
+Flight::route('PUT /admin/events/@eventid', function($eventid){
+    AuthManager::checkTocken();
+    $body = json_decode(Flight::request()->getBody());
+    $em=new EventManager();
+    $response=$em->updateEvent($eventid,$body->eventname,$body->eventstart,$body->eventend,
+        $body->maxvisitors);
+    sendResponse($response);
+});
+
+Flight::route('DELETE /admin/events/@eventid', function($eventid){
+    AuthManager::checkTocken();
+    $body = json_decode(Flight::request()->getBody());
+    $em=new EventManager();
+    $response=$em->deleteEvent($eventid);
+    sendResponse($response);
+});
+
+
+
 
 Flight::route('/events/clear', function(){
     $body = json_decode(Flight::request()->getBody());

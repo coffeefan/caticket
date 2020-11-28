@@ -20,6 +20,39 @@ class EventManager{
         return new Response($statement->fetchAll(\PDO::FETCH_ASSOC));
     }
 
+    public function getEvents(){
+        $statement = $this->db->prepare("
+            SELECT eventid, eventname,eventstart,eventend,maxvisitors, 
+                (SELECT COUNT(*) FROM visitors as bv WHERE eventid=events.eventid AND isdeleted!=1 AND STATUS=10) as bookedvisitors,
+                (SELECT COUNT(*) FROM visitors as rv WHERE eventid=events.eventid AND isdeleted!=1 AND STATUS!=10) as reservedvisitors 
+                from events
+             Order by eventstart desc");
+        $statement->execute();
+        return new Response($statement->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    public function addEvent($eventname,$eventstart,$eventend,$maxvisitors){
+        $statement = $this->db->prepare("
+            Insert into events (eventname,eventstart,eventend,maxvisitors) VALUES (:eventname,:eventstart,:eventend,:maxvisitors) ");
+        $statement->execute(array(":eventname"=>$eventname,":eventstart"=>$eventstart,":eventend"=>$eventend,":maxvisitors"=>$maxvisitors));
+        return new Response([]);
+    }
+
+    public function updateEvent($eventid,$eventname,$eventstart,$eventend,$maxvisitors){
+        $statement = $this->db->prepare("
+           Update events set eventname=:eventname,eventstart=:eventstart,eventend=:eventend,maxvisitors=:maxvisitors where eventid=:eventid ");
+        $statement->execute(array(":eventid"=>$eventid,":eventname"=>$eventname,":eventstart"=>$eventstart,":eventend"=>$eventend,":maxvisitors"=>$maxvisitors));
+        return new Response([]);
+    }
+
+    public function deleteEvent($eventid){
+        $statement = $this->db->prepare("
+           Delete from events where eventid=:eventid ");
+        $statement->execute(array(":eventid"=>$eventid));
+        return new Response([]);
+    }
+
+
     public function getReservation($reservationkey){
         $date = new DateTime("now", new DateTimeZone('Europe/Berlin') );
         $statement = $this->db->prepare("

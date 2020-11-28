@@ -4,6 +4,8 @@
 	//config
 	Vue.config.devtools = true;
 	let restdomain="https://www.kirchenaadorf.ch/chrischona/caticket";
+	restdomain="";
+
 
 	Vue.component('eventbox', {
 			template: '#eventbox',
@@ -353,11 +355,162 @@
 	* dashboard
 	 */
 
+	Vue.component('adminevents', {
+		template: '#admineventsbox',
+		data() {
+			return {
+				errors:[],
+				events:[],
+				eventform:{},
+				deleteevent:{}
+			}
+		},
+		created(){
+			this.loadevents();
+		},
+		methods:{
+			showeventdetail: function(event=null){
+				if(event!=={} && event!=null){
+					event.eventdate=moment(event.eventstart).format('YYYY-MM-DD');
+					event.starttime=moment(event.eventstart).format('H:mm');
+					event.endtime=moment(event.eventend).format('H:mm');
+				}else{
+					event={};
+					event.eventid=-1;
+					event.eventdate=moment(event.eventstart).format('YYYY-MM-DD');
+					event.starttime='10:00';
+					event.endtime='11:15';
+				}
+				console.log(event);
+				this.eventform=event;
+
+
+				this.$bvModal.show('modal-showeventdetail');
+			},
+			saveEvent:function(){
+				let event = {};
+				event.eventid = this.eventform.eventid;
+				event.eventstart =  this.eventform.eventdate+" "+this.eventform.starttime;
+				event.eventend =  this.eventform.eventdate+" "+this.eventform.endtime;
+				event.eventname= this.eventform.eventname;
+				event.maxvisitors = this.eventform.maxvisitors;
+
+
+				method="POST";
+				savecall="/api/admin/events";
+
+				if(event.eventid!==-1){
+					method="PUT";
+					savecall+="/"+event.eventid;
+				}
+
+				const requestOptions = {
+					method: method,
+					headers: { "Authorization": "Bearer "+this.$parent.jwttoken,"Content-Type": "application/json" },
+					body: JSON.stringify(event)
+				};
+				fetch(restdomain+savecall, requestOptions)
+					.then(async response => {
+						if(response.ok) {
+							this.loadevents();
+						}else if(response.status===401){
+							this.$parent.logout();
+						}else{
+							this.loadevents();
+							this.errors.push('Daten waren falsch');
+						}
+					})
+
+					.catch((e) => {
+
+						this.errors.push('Unbekannter Systemfehler'+e.message);
+					});
+			},
+			showDelete:function(deleteevent){
+				this.deleteevent=deleteevent;
+				this.$bvModal.show('modal-deleteevent',{
+						okTitle: 'Nein',
+						cancelTitle: 'Ja',
+						hideHeaderClose: false,
+						centered: true
+				});
+			},
+			deleteEventNow:function(){
+				const requestOptions = {
+					method: 'DELETE',
+					headers: { "Authorization": "Bearer "+this.$parent.jwttoken,"Content-Type": "application/json" },
+				};
+				fetch(restdomain+"/api/admin/events/"+this.deleteevent.eventid, requestOptions)
+					.then(async response => {
+						if(response.ok) {
+							this.loadevents();
+						}else if(response.status===401){
+							this.$parent.logout();
+						}else{
+							this.loadevents();
+							this.errors.push('Daten waren falsch');
+						}
+					})
+
+					.catch((e) => {
+
+						this.errors.push('Unbekannter Systemfehler'+e.message);
+					});
+			},
+			loadevents: function(){
+
+				errors=[];
+
+				const requestOptions = {
+					method: "GET",
+					headers: { "Authorization": "Bearer "+this.$parent.jwttoken,"Content-Type": "application/json" }
+
+				};
+				fetch(restdomain+"/api/admin/events", requestOptions)
+					.then(async response => {
+						if(response.ok) {
+							this.events= await response.json();
+						}else if(response.status===401){
+							alert("okey");
+							this.$parent.logout();
+						}else{
+							this.errors.push('Logindaten falsch');
+
+						}
+					})
+
+					.catch((e) => {
+
+						this.errors.push('Unbekannter Systemfehler'+e.message);
+					});
+			}
+
+
+
+
+		}
+
+	});
+
+
+
+	Vue.component('adminvisitors', {
+		template: '#adminvisitorsbox',
+
+		created(){
+
+		},
+		methods:{
+		}
+
+	});
+
 	Vue.component('login', {
 		template: '#loginbox',
 		data() {
 			return {
 				loginformdata:{},
+				events:[],
 				errors:[]
 			}
 		},
@@ -392,6 +545,26 @@
 						this.errors.push('Logindaten falsch');
 					});
 			}
+
+		}
+
+	});
+
+
+	Vue.component('dashboardnavigation', {
+		template: '#dashboardnavigationbox',
+		data() {
+			return {
+
+			}
+		},
+		created(){
+
+		},
+		methods:{
+			navigate(target){
+				this.$parent.goToStep(target);
+			}
 		}
 
 	});
@@ -415,12 +588,18 @@
 		},
 		methods:{
 			goToStep: function(step) {
-				this.activView = step;
+				this.dactivView = step;
 				localStorage.setItem('caticketdashboardactivview', JSON.stringify(this.dactivView));
 			},
 			updateCredentials: function(jwttoken,jwttokenexpireat){
-				localStorage.setItem('catickjwttoken', jwttoken);
-				localStorage.setItem('catickjwttokenexpireat', jwttokenexpireat);
+				this.catickjwttoken=jwttoken;
+				localStorage.setItem('catickjwttoken', this.catickjwttoken);
+				this.jwttokenexpireat=jwttokenexpireat;
+				localStorage.setItem('catickjwttokenexpireat', this.jwttokenexpireat);
+			},
+			logout:function(){
+				this.updateCredentials(null,0);
+				this.goToStep("login");
 			}
 		}
 
